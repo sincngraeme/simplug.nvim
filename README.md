@@ -168,6 +168,11 @@ the following arguments:
 ## The full example `init.lua`
 
 ```lua
+-- Download the package manager
+vim.pack.add({
+    "https://github.com/sincngraeme/simplug.nvim"
+})
+
 -- Load the package manager
 local simplug = require("simplug")
 -- Configure
