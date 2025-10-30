@@ -15,12 +15,14 @@ Please ensure you are using the most recent release.
 
 ## Pros/Cons
 
+
 | Pros                                    | Cons                                                      |
 | --------------------------------------- | --------------------------------------------------------- |
 | - Simple and lightweight                | - No Lazy loading (limitation in builtin package manager) |
 | - Easy plugin depency management        | - (Relatively) Untested                                   |
 | - Quickly unload plugins at will        | - No fancy menus                                          |
 | - Control over your directory structure | - I am a student with minimal time to maintain this repo  |
+
 
 >[!note]
 >I do not recommend this plugin for beginners as it is brand new and it is not unlikely you will run into issues. It is also intended to give more control than alternative package managers. If you are new to neovim/lua I recommend [lazy](https://lazy.folke.io/). It is very well documented and easy to setup.
@@ -55,12 +57,12 @@ file.
 require("simplug").setup()
 ```
 
+
 >[!note]
 >The path will depend on where you put the module and where you require it from
 
-If you want an example of how this works, see my Neovim config. I require the module directly rather than
-installing with the package manager (because I wrote it). My `init.lua` file also gives a good example usage of
-the plugin.
+
+If you want an example of how this works, see my [Neovim config](https://github.com/sincngraeme/nvim-rc). I require the module directly rather than installing with the package manager (because I wrote it). My `init.lua` file also gives a good example usage of the plugin.
 
 ## Configuration
 
@@ -78,6 +80,7 @@ require("simplug").setup({
 >[!Note]
 >The plugin assumes you have a similar directory structure to:
 >
+>```
 >nvim
 >├── lua
 >│   └── plugins
@@ -85,6 +88,7 @@ require("simplug").setup({
 >│       └── plugin2
 >├── init.lua
 >└── nvim-pack-lock.json
+>```
 >
 >If you have a flat structure (no lua folder) or a monolithic config file, you are best served with the default
 >package manager. Simplug is intended for a "file per plugin" setup.
@@ -159,3 +163,30 @@ the following arguments:
 
 >[!note]
 >Simplug does not allow for manual installation of plugins by default as it is intended to be run automatically.
+
+
+## The full example `init.lua`
+
+```lua
+-- Load the package manager
+local simplug = require("simplug")
+-- Configure
+simplug.setup({
+    -- Your configuration options
+})
+
+-- Load the colorschemes 
+simplug.load({
+    -- Your colorschemes here
+}, "colorschemes")
+
+vim.cmd.colorscheme("somecolorscheme")
+
+-- Load the plugins (order matters)
+simplug.load({
+    -- Your Plugins Here
+})
+
+-- Clean the unused plugins
+simplug.clean()
+```
