@@ -153,6 +153,36 @@ If you wish to disable a plugin by removing it from the load list without uninst
 >[!important]
 >`ignore_list` entries must refer to the name of the plugin, not the name of the config file as with `.load()` since it will not be loaded
 
+## Plugin Configuration
+
+Individual plugins are configured similarly to lazy. They must have the following format:
+
+```lua
+return {
+    link = "acount-name/repo-name"
+    config = function()
+        return require("module-name").setup({
+            -- Your Plugin Config Here
+        })
+    end
+}
+```
+
+The type of config may not be a table. You *must* use an anonymous function. In cases where a plugin does not
+support the `.setup()` method, you may assign it a boolean: `false`. This is often the case for plugins
+implemented in vim-script. However, boolean `true` is not a valid value, as this is implies that there is a
+config which does not exist.
+
+Some plugins will require you to specify a branch/version. In this case you can use:
+
+```lua
+link = { src = "acount-name/repo-name", branch = "branch-name"}
+```
+
+>[!note]
+>The branch option is also used for version numbers, commit hashes, etc. See `:h vim.pack.Spec`. (branch is
+>equivalent to version)
+
 ## Commands
 
 Simplug only exposes one command: `SimplugUpdate`. This is used to manually run the update process. It accepts
