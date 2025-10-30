@@ -72,7 +72,7 @@ Configuration is simple. Calling `.setup()` is not even required if you are fine
 require("simplug").setup({
     plugin_dir = "plugins"      -- location to load plugin configs from (can also be passed to the load function)
     always_update = false       -- whether or not to always run pack.update with load
-    pack_lockfile = "nvim-pack-lock.json"   -- location of the lockfile if not in the default location
+    pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json"   -- location of the lockfile if not in the default location
     confirm_update  = false     -- whether or not to ask the user for confirmation when updating plugins
 })
 ```
