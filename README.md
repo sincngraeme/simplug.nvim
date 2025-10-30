@@ -62,7 +62,7 @@ require("simplug").setup()
 >The path will depend on where you put the module and where you require it from
 
 
-If you want an example of how this works, see my [Neovim config](https://github.com/sincngraeme/nvim-rc). I require the module directly rather than installing with the package manager (because I wrote it). My `init.lua` file also gives a good example usage of the plugin.
+If you want an example of how this works, see my [Neovim config](https://github.com/sincngraeme/nvim-rc/minimal). I require the module directly rather than installing with the package manager (because I wrote it). My `init.lua` file also gives a good example usage of the plugin.
 
 ## Configuration
 
