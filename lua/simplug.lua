@@ -10,6 +10,7 @@ local plugin_name_list = {} -- The actual names of the plugins
 local always_update = false
 local confirm_update = false
 local confirm_clean = false
+local load_offline = false
 
 ---@brief Setup function for the module
 ---@param simplug_config { 
@@ -18,12 +19,14 @@ local confirm_clean = false
     ---pack_lockfile: string,    --- pack_lockfile: location of the lockfile if not in the default location
     ---confirm_update: boolean,  --- confirm_update: whether or not to ask the user for confirmation when updating
     ---confirm_clean: boolean }  --- confirm_clean: whether or not to ask the user for confirmations when cleaning
+    ---load_offline: boolean }   --- load_offline: whether or not to attempt download
 function M.setup(simplug_config)
     default_plugin_dir = simplug_config.plugin_dir or default_plugin_dir
     always_update = simplug_config.always_update or always_update
     pack_lockfile = simplug_config.pack_lockfile or pack_lockfile
     confirm_update = simplug_config.confirm_update or confirm_update
     confirm_clean = simplug_config.confirm_clean or confirm_clean
+    load_offline = simplug_config.load_offline or load_offline
 end
 
 ---@brief Loads the json lockfile needed for vim.pack functions
@@ -49,6 +52,15 @@ local function load_lockfile()
         return false
     end
     return true
+end
+
+function load_plugins_offline(load_list)
+    for _, plugin in ipairs(load_list) do
+        local ok, _ pcall(vim.cmd, "packadd! " .. plugin)
+        if not ok then 
+            vim.notify("Plugin: " .. plugin .. " could not be loaded", vim.log.levels.ERROR) 
+        end
+    end
 end
 
 ---@brief loads the plugin install list, installs the plugins and configures them based on user configs
@@ -90,11 +102,15 @@ function M.load(plugin_list, plugin_dir) plugin_dir = plugin_dir or default_plug
             end
         end
     end
-    -- Install
-    vim.pack.add(pack_list)
-    -- Check for update
-    if always_update then
-        M.update({})
+    -- Install (unless the user specifies to stay offline)
+    if not load_offline then
+        vim.pack.add(pack_list)
+        -- Check for update
+        if always_update then
+            M.update({})
+        end
+    else
+        load_plugins_offline(pack_list)
     end
     -- Configure
     for i, plugin_config in ipairs(config_list) do
