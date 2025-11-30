@@ -129,11 +129,13 @@ function M.clean(ignore_list)
         for _, name in ipairs(ignore_list) do
             plugin_name_list[name] = "ignore"
         end
+        plugin_name_list["simplug.nvim"] = "ignore"
     end
     local user_input = 'y'
     if not confirm_clean then user_input = 'Y' end -- If the confirm_clean option is false, clean all
     if load_lockfile() then
         for name, _ in pairs(pack_lockfile_content.plugins) do
+            vim.notify(name)
             if not plugin_name_list[name] and  plugin_name_list[name] ~= "ignore" then
                 if not user_input:match("^[YN]") then
                     vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
