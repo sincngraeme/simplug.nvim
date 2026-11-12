@@ -7,6 +7,7 @@ local config_list = {} -- Configurations for each plugin
 local pack_lockfile_content = {}
 local pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json"
 local plugin_name_list = {} -- The actual names of the plugins
+local command_line_completions = {} -- the completion options for the update command
 local always_update = false
 local confirm_update = true
 local confirm_clean = false
@@ -62,6 +63,7 @@ function M.load(plugin_list, plugin_dir) plugin_dir = plugin_dir or default_plug
             vim.notify("Failed to Locate Module: " .. plugin, vim.log.levels.ERROR)
         else
             -- Construct the git link list
+            command_line_completions = plugin_name_list
             if not module.link then
                 vim.notify("Missing Field: link", vim.log.levels.ERROR)
             elseif type(module.link) == "string" then
@@ -155,7 +157,7 @@ end, { nargs = '*', complete = function(arg_lead, cmd_line, cursor_pos)
     _ = cursor_pos
     return vim.tbl_filter(function(choice)
         return vim.startswith(choice, arg_lead)
-    end, plugin_name_list)
+    end, command_line_completions)
 end})
 
 return M
