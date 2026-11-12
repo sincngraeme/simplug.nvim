@@ -24,6 +24,8 @@ function M.setup(simplug_config)
     pack_lockfile = simplug_config.pack_lockfile or pack_lockfile
     confirm_update = simplug_config.confirm_update or confirm_update
     confirm_clean = simplug_config.confirm_clean or confirm_clean
+
+    vim.notify("hello!")
 end
 
 ---@brief Loads the json lockfile needed for vim.pack functions
