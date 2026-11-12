@@ -150,6 +150,8 @@ end
 --- CREATE COMMANDS FOR MANUAL UPDATE ---
 vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
     M.update( opts.fargs )
-end, { nargs = '*' })
+end, { nargs = '*', complete = function()
+    return plugin_name_list
+end})
 
 return M
