@@ -19,19 +19,19 @@ Please ensure you are using the most recent release.
 | Pros                                    | Cons                                                      |
 | --------------------------------------- | --------------------------------------------------------- |
 | - Simple and lightweight                | - No Lazy loading (limitation in builtin package manager) |
-| - Easy plugin depency management        | - (Relatively) Untested                                   |
-| - Quickly unload plugins at will        | - No fancy menus                                          |
-| - Control over your directory structure | - I am a student with minimal time to maintain this repo  |
+| - Easy plugin depency management        | - No fancy menus                                          |
+| - Quickly unload plugins at will        | - Honestly I don't frequently maintain this               |
+| - Control over your directory structure | |
 
 
 >[!note]
->I do not recommend this plugin for beginners as it is brand new and it is not unlikely you will run into issues. It is also intended to give more control than alternative package managers. If you are new to neovim/lua I recommend [lazy](https://lazy.folke.io/). It is very well documented and easy to setup.
+>If you are new to neovim/lua I recommend [lazy](https://lazy.folke.io/). It is very well documented and easy to setup.
 
 ## Installation
 
-There are a few ways to install this plugin. 
+There are a few ways to install this plugin.
 
-**Option 1**
+## **Option 1**
 
 You can use the builtin package manager to install it early in your
 configuration:
@@ -42,7 +42,7 @@ vim.pack.add({"https://github.com/sincngraeme/simplug.nvim"})
 
 This is the way I recommend because it will update Simplug whenever there are changes.
 
-**Option 2**
+## **Option 2**
 
 Install with git or download manually (this will not respond to updates so I don't recommend this). 
 
@@ -60,9 +60,6 @@ require("simplug").setup()
 
 >[!note]
 >The path will depend on where you put the module and where you require it from
-
-
-If you want an example of how this works, see my [Neovim config](https://github.com/sincngraeme/nvim-rc/minimal). I require the module directly rather than installing with the package manager (because I wrote it). My `init.lua` file also gives a good example usage of the plugin.
 
 ## Configuration
 
@@ -142,7 +139,7 @@ simplug.load({
 ```
 
 You may also separate your plugin load tables even if they are in the same directory, though this is likely 
-noticeably slower than loading them all in one.
+slower than loading them all in one (haven't tested, you can if you care).
 
 Once all plugins have been loaded, it is recommended to call `.clean()`. This function will check your
 `nvim-pack-lock.json` file for plugins that you have not loaded but are still installed, and uninstall them. If
@@ -185,14 +182,26 @@ link = { src = "acount-name/repo-name", branch = "branch-name"}
 
 ## Commands
 
-Simplug only exposes one command: `SimplugUpdate`. This is used to manually run the update process. It accepts
-the following arguments:
+Simplug only exposes one command by default: `SimplugUpdate`. This is used to manually run the update process.
+It accepts a list of plugins to be updated. It provides completion for available plugins to update.
+if no arguments are provided it will update all installed plugins. 
 
-- `'all'`: Updates all plugins
-- `plugin_name`: The name of an individual plugin to update
+```vim
+SimplugUpdate plenary.nvim telescope.nvim   " updates given plugins
+SimplugUpdate                               " updates all installed plugins
+```
 
->[!note]
->Simplug does not allow for manual installation of plugins by default as it is intended to be run automatically.
+`simplug.nvim` does not appear as a completion option, but it is also valid, and the recommended way
+to update Simplug (though calling `vim.pack.update()` is also fine) assuming you installed Simplug with `vim.pack`.
+
+```vim
+SimplugUpdate simplug.nvim
+```
+
+
+>[!NOTE]
+>Plugin names are the name of the plugin itself, not what you named the plugin config (as with
+>`ignore_list`).
 
 
 ## The full example `init.lua`
