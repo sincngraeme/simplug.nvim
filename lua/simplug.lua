@@ -68,11 +68,11 @@ function M.load(plugin_list, plugin_dir) plugin_dir = plugin_dir or default_plug
                 vim.notify("Missing Field: link", vim.log.levels.ERROR)
             elseif type(module.link) == "string" then
                 table.insert(pack_list, remote_url .. module.link)
-                plugin_name_list[string.match(module.link, "%/(.*)$")] = 'installed'
+                -- plugin_name_list[string.match(module.link, "%/(.*)$")] = 'installed'
             else
                 -- Sometimes a branch is specified (pass a table instead)
                 table.insert(pack_list, { src = remote_url .. module.link.src, version = module.link.version })
-                plugin_name_list[string.match(module.link.src, "%/(.*)$")] = 'installed'
+                -- plugin_name_list[string.match(module.link.src, "%/(.*)$")] = 'installed'
             end
             -- Construct the Config list
             if not module.config then
