@@ -173,6 +173,7 @@ vim.api.nvim_create_user_command("SimplugLoad", function(opts)
             return
         end
         M.load(opts.fargs, dir)
+        return
     end
     M.load(opts.fargs)
 end, { bang = true, nargs = '+', complete = completion_generation })
