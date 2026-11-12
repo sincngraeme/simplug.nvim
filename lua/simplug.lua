@@ -63,16 +63,15 @@ function M.load(plugin_list, plugin_dir) plugin_dir = plugin_dir or default_plug
             vim.notify("Failed to Locate Module: " .. plugin, vim.log.levels.ERROR)
         else
             -- Construct the git link list
-            command_line_completions = plugin_name_list
             if not module.link then
                 vim.notify("Missing Field: link", vim.log.levels.ERROR)
             elseif type(module.link) == "string" then
                 table.insert(pack_list, remote_url .. module.link)
-                -- plugin_name_list[string.match(module.link, "%/(.*)$")] = 'installed'
+                plugin_name_list[string.match(module.link, "%/(.*)$")] = 'installed'
             else
                 -- Sometimes a branch is specified (pass a table instead)
                 table.insert(pack_list, { src = remote_url .. module.link.src, version = module.link.version })
-                -- plugin_name_list[string.match(module.link.src, "%/(.*)$")] = 'installed'
+                plugin_name_list[string.match(module.link.src, "%/(.*)$")] = 'installed'
             end
             -- Construct the Config list
             if not module.config then
@@ -155,6 +154,13 @@ vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
 end, { nargs = '*', complete = function(arg_lead, cmd_line, cursor_pos)
     _ = cmd_line
     _ = cursor_pos
+
+    local command_line_completions = {}
+	
+	for key, _ in pairs(plugin_name_list) do
+        table.insert(command_line_completions, key)
+    end
+
     return vim.tbl_filter(function(choice)
         return vim.startswith(choice, arg_lead)
     end, command_line_completions)
