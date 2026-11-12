@@ -165,7 +165,7 @@ end
 
 --- CREATE USER COMMANDS FOR MANUAL USAGE ---
 
-vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
+vim.api.nvim_create_user_command("SimplugLoad", function(opts)
     if opts.bang then
         local dir = opts.fargs:remove(1)
         if type(dir) ~= "string" then
@@ -177,7 +177,7 @@ vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
     M.load(opts.fargs)
 end, { bang = true, nargs = '+', complete = completion_generation })
 
-vim.api.nvim_create_user_command("SimplugLoad", function(opts)
+vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
     if not opts.count then return end
     M.update( opts.fargs )
 end, { nargs = '*', complete = completion_generation })
