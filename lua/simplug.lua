@@ -8,7 +8,7 @@ local pack_lockfile_content = {}
 local pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json"
 local plugin_name_list = {} -- The actual names of the plugins
 local always_update = false
-local confirm_update = false
+local confirm_update = true
 local confirm_clean = false
 
 ---@brief Setup function for the module
@@ -116,9 +116,9 @@ end
 ---@param update_list table? the list of plugins to update (optional, does all otherwise)
 function M.update(update_list)
     if update_list then
-        vim.pack.update(update_list, { force = confirm_update })
+        vim.pack.update(update_list, { force = not confirm_update })
     else
-        vim.pack.update(nil, { force = confirm_update })
+        vim.pack.update(nil, { force = not confirm_update })
     end
 end
 
