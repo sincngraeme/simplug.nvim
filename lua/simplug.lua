@@ -147,11 +147,7 @@ function M.clean(ignore_list)
     end
 end
 
---- CREATE COMMANDS FOR MANUAL UPDATE ---
-vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
-    if not opts.count then return end
-    M.update( opts.fargs )
-end, { nargs = '*', complete = function(arg_lead, cmd_line, cursor_pos)
+local completion_generation = function(arg_lead, cmd_line, cursor_pos)
     _ = cmd_line
     _ = cursor_pos
 
@@ -164,6 +160,27 @@ end, { nargs = '*', complete = function(arg_lead, cmd_line, cursor_pos)
     return vim.tbl_filter(function(choice)
         return vim.startswith(choice, arg_lead)
     end, command_line_completions)
-end})
+end
+
+
+--- CREATE USER COMMANDS FOR MANUAL USAGE ---
+
+vim.api.nvim_create_user_command("SimplugLoad", function(opts)
+    if opts.bang then
+        local dir = table.remove(opts.fargs, 1)
+        if type(dir) ~= "string" then
+            vim.notify("Error updating plugin: expected 'string' as argument 1", vim.log.levels.ERROR)
+            return
+        end
+        M.load(opts.fargs, dir)
+        return
+    end
+    M.load(opts.fargs)
+end, { bang = true, nargs = '+', complete = completion_generation })
+
+vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
+    if not opts.count then return end
+    M.update( opts.fargs )
+end, { nargs = '*', complete = completion_generation })
 
 return M
