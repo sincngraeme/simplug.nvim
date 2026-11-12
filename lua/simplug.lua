@@ -167,7 +167,7 @@ end
 
 vim.api.nvim_create_user_command("SimplugLoad", function(opts)
     if opts.bang then
-        local dir = opts.fargs:remove(1)
+        local dir = table.remove(opts.fargs, 1)
         if type(dir) ~= "string" then
             vim.notify("Error updating plugin: expected 'string' as argument 1", vim.log.levels.ERROR)
             return
