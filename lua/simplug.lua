@@ -7,8 +7,9 @@ local config_list = {} -- Configurations for each plugin
 local pack_lockfile_content = {}
 local pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json"
 local plugin_name_list = {} -- The actual names of the plugins
+local command_line_completions = {} -- the completion options for the update command
 local always_update = false
-local confirm_update = false
+local confirm_update = true
 local confirm_clean = false
 
 ---@brief Setup function for the module
@@ -116,9 +117,9 @@ end
 ---@param update_list table? the list of plugins to update (optional, does all otherwise)
 function M.update(update_list)
     if update_list then
-        vim.pack.update(update_list, { force = confirm_update })
+        vim.pack.update(update_list, { force = not confirm_update })
     else
-        vim.pack.update({ force = confirm_update })
+        vim.pack.update(nil, { force = not confirm_update })
     end
 end
 
@@ -149,8 +150,20 @@ end
 
 --- CREATE COMMANDS FOR MANUAL UPDATE ---
 vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
-    if opts.args == "all" then M.update({})
-    else M.update({ opts.args }) end
-end, { nargs = 1 })
+    M.update( opts.fargs )
+end, { nargs = '*', complete = function(arg_lead, cmd_line, cursor_pos)
+    _ = cmd_line
+    _ = cursor_pos
+
+    local command_line_completions = {}
+	
+	for key, _ in pairs(plugin_name_list) do
+        table.insert(command_line_completions, key)
+    end
+
+    return vim.tbl_filter(function(choice)
+        return vim.startswith(choice, arg_lead)
+    end, command_line_completions)
+end})
 
 return M
