@@ -118,7 +118,7 @@ function M.update(update_list)
     if update_list then
         vim.pack.update(update_list, { force = confirm_update })
     else
-        vim.pack.update({ force = confirm_update })
+        vim.pack.update(nil, { force = confirm_update })
     end
 end
 
