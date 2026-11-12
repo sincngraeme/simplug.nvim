@@ -149,8 +149,7 @@ end
 
 --- CREATE COMMANDS FOR MANUAL UPDATE ---
 vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
-    if opts.args == "all" then M.update({})
-    else M.update({ opts.args }) end
-end, { nargs = 1 })
+    M.update( opts.fargs )
+end, { nargs = '*' })
 
 return M
