@@ -142,13 +142,13 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
             -- Do nothing
         else
             local entry = plugin_registry[name]
-            if type(entry.spec.config) ~= "function"
-            or type(entry.spec.config) ~= "nil" then
-                vim.notify("Error loading config for: " .. name .. "- Config must be a function or nil",
-                    vim.log.levels.ERROR)
-            else
+            if type(entry.spec.config) == "function"
+            or type(entry.spec.config) == "nil" then
                 if entry.spec.config and not entry.spec.lazy then plugin_config() end
-                -- vim.notify(plugin_list[i] .. ": Config Loaded Successfully", vim.log.levels.INFO)
+                vim.notify(plugin_list[i] .. ": Config Loaded Successfully", vim.log.levels.INFO)
+            else
+                vim.notify("Error loading config for: " .. name .. " - config must be a function or nil",
+                vim.log.levels.ERROR)
             end
         end
     end
