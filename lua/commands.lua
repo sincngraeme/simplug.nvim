@@ -1,12 +1,11 @@
 local M = {}
 --- CREATE USER COMMANDS FOR MANUAL USAGE ---
 
----@module 'simplug'
-local simplug = require("simplug")
-
 ---@brief   registers the user commands and autocommands for Simplug
 ---@param   names string[]
-function M.register(names)
+---@param   update function
+---@param   load function
+function M.register(names, update, load)
 
     local completion_generation = function(arg_lead, cmd_line, cursor_pos)
         _ = cmd_line
@@ -30,15 +29,15 @@ function M.register(names)
                 vim.notify("Error updating plugin: expected 'string' as argument 1", vim.log.levels.ERROR)
                 return
             end
-            simplug.load(opts.fargs, dir)
+            load(opts.fargs, dir)
             return
         end
-        simplug.load(opts.fargs)
+        load(opts.fargs)
     end, { bang = true, nargs = '+', complete = completion_generation })
 
     vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
         if not opts.count then return end
-        simplug.update( opts.fargs )
+        update( opts.fargs )
     end, { nargs = '*', complete = completion_generation })
 end
 
