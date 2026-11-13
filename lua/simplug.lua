@@ -6,8 +6,14 @@ local M = {}
 local remote_url = "https://github.com/"
 
 ---@alias SimplugSpec { 
----link: string,            --- link: link to git repo containing plugin
----config: function,        --- config: function to run at config
+---origin: string|vim.pack.Spec,     --- link: link to git repo containing plugin
+---config: function|nil,        --- config: function to run at config
+---}
+
+---@alias SimplugRegistryEntry {
+---spec: SimplugSpec,
+---installed: boolean,
+---status: "loaded" | "loading" | "unloaded",
 ---}
 
 ---@alias SimplugConfig {
@@ -18,9 +24,8 @@ local remote_url = "https://github.com/"
 ---confirm_clean: boolean,      --- confirm_clean: whether or not to ask the user for confirmations when cleaning
 ---}
 
-local pack_list = {}  -- absolute links for installations
-local config_list = {} -- Configurations for each plugin
-local plugin_name_list = {} -- The actual names of the plugins
+---@type string[]
+local plugin_name_list = {}
 
 ---@type SimplugConfig
 local default_config = {
@@ -34,8 +39,8 @@ local default_config = {
 ---@type SimplugConfig
 local config = {}
 
----@type table<string, SimplugSpec>
-local plugin_list = {}
+---@type table<string, SimplugRegistryEntry>
+local plugin_registry = {}
 
 ---@brief   Setup function for the module
 ---@param   user_config SimplugConfig 
@@ -61,57 +66,88 @@ end
 ---@param plug_list table the list of plugins to install and configure (must match the filename of the config file)
 ---@param plug_dir string? the directory to check for plugins if not the default or user configured default path
 function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
+
+    ---@type vim.pack.Spec[]
+    local plugin_spec_list = {}
+
+
+    if type(plug_dir) ~= "string" then
+        vim.notify("Invalid type for plugin directory: " .. type(plug_dir), vim.log.levels.ERROR)
+        return
+    end
+
+    if type(plug_list) ~= "table" then
+        vim.notify("Invalid type for plugin list: " .. type(plug_list), vim.log.levels.ERROR)
+        return
+    end
+
     for _, plugin in ipairs(plug_list) do
-        -- Try to load the module
-        local ok, module = pcall(require, plug_dir .. "." .. plugin)
+
+        if type(plugin) ~= "string" then
+            vim.notify("Invalid type for plugin entry: " .. type(plugin), vim.log.levels.ERROR)
+            goto continue
+        end
+
+        -- Skip if its spec can't be found
+        ---@type boolean, SimplugSpec
+        local ok, spec = pcall(require, plug_dir .. "." .. plugin)
         if not ok then
             vim.notify("Failed to Locate Module: " .. plugin, vim.log.levels.ERROR)
-        else
-            -- Construct the git link list
-            if not module.link then
-                vim.notify("Missing Field: link", vim.log.levels.ERROR)
-            elseif type(module.link) == "string" then
-                table.insert(pack_list, remote_url .. module.link)
-                plugin_name_list[string.match(module.link, "%/(.*)$")] = 'installed'
-            else
-                -- Sometimes a branch is specified (pass a table instead)
-                table.insert(pack_list, { src = remote_url .. module.link.src, version = module.link.version })
-                plugin_name_list[string.match(module.link.src, "%/(.*)$")] = 'installed'
+            goto continue
+        end
+
+        -- Skip if the origin is not a string or vim.pack.Spec
+        local origin = spec.origin
+
+        if type(origin) == "string" then
+            spec.origin = { src = origin }
+        elseif type(origin) == "table" then
+            -- if no name was supplied, then use the repo url 
+            -- (vim.pack.add does this but we need the field too)
+            if not spec.origin.name then
+                spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/(.*)$")
             end
-            -- Construct the Config list
-            if not module.config then
-                if type(module.config) ~= "boolean" then -- Plugins with no config are denoted "config = false"
-                    vim.notify("No config for module: " .. plugin, vim.log.levels.ERROR)
-                end
-                table.insert(config_list, false) -- We still need an entry in the table to keep them the same size
-            else
-                if type(module.config) == "boolean" then -- This only happens if passed "config == true"
-                    vim.notify("Config cannot have value 'true'. Use `config = false` " ..
-                                "for plugins which do not call `setup()` or use `config = function()`",
-                                vim.log.levels.ERROR)
-                    table.insert(config_list, false)
-                else
-                    table.insert(config_list, module.config)
-                end
+        else
+            vim.notify(
+                "Error in config for plugin " .. plugin .. ": expected string|vim.pack.Spec",
+                vim.log.levels.ERROR
+            )
+            goto continue
+        end
+
+        -- check if there is already an entry
+        ---@type SimplugRegistryEntry
+        local existing_entry = plugin_registry[plugin]
+        if existing_entry then
+            if existing_entry.installed then
+                goto continue -- TOOD: should we update config?
             end
         end
+
+        -- commit the changes to the registry
+        plugin_registry[plugin] = { spec = spec, installed = true, status = "loading" }
+        table.insert(plugin_name_list, plugin)
+        table.insert(plugin_spec_list, spec.origin)
+
+        :: continue ::
     end
+
     -- Install
-    vim.pack.add(pack_list)
-    -- Check for update
-    if config.always_update then
-        M.update({})
-    end
+    vim.pack.add(plugin_spec_list)
+
     -- Configure
-    for i, plugin_config in ipairs(config_list) do
-        if not plugin_config then
+    ---@type integer, string
+    for _, name in ipairs(plugin_name_list) do
+        if not name then
             -- Do nothing
         else
-            if type(plugin_config) == "table" then
-                vim.notify("Error loading config for: " .. plug_list[i] .. "Config must be a function",
+            local entry = plugin_registry[name]
+            if type(entry.spec.config) ~= "function"
+            or type(entry.spec.config) ~= "nil" then
+                vim.notify("Error loading config for: " .. name .. "- Config must be a function or nil",
                     vim.log.levels.ERROR)
             else
-                plugin_config()
+                if entry.spec.config and not entry.spec.lazy then plugin_config() end
                 -- vim.notify(plugin_list[i] .. ": Config Loaded Successfully", vim.log.levels.INFO)
             end
         end
@@ -119,7 +155,7 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
 end
 
 ---@brief Update installed plugins
----@param update_list table? the list of plugins to update (optional, does all otherwise)
+---@param update_list string[]? the list of plugins to update (optional, does all otherwise)
 function M.update(update_list)
     if type(update_list) == "table" and next(update_list) ~= nil then
         vim.pack.update(update_list, { force = not config.confirm_update })
@@ -129,7 +165,7 @@ function M.update(update_list)
 end
 
 ---@brief Delete the Unwanted Plugins (installed but not in list)
----@param ignore_list table? list of plugins to ignore when cleaning (optional)
+---@param ignore_list string[]? list of plugins to ignore when cleaning (optional)
 function M.clean(ignore_list)
     if ignore_list then
         for _, name in ipairs(ignore_list) do
@@ -142,7 +178,7 @@ function M.clean(ignore_list)
 
     -- If the confirm_clean option is false, clean all
     local user_input = 'y'
-    if not confirm_clean then user_input = 'Y' end
+    if not config.confirm_clean then user_input = 'Y' end
 
 
     if lockfile.load(config.pack_lockfile) then
