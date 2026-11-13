@@ -146,7 +146,7 @@ function M.clean(ignore_list)
 
 
     if lockfile.load(config.pack_lockfile) then
-        vim.notfiy("Error loading " .. config.pack_lockfile, vim.log.levels.ERROR)
+        vim.notify("Error loading " .. config.pack_lockfile, vim.log.levels.ERROR)
         return
     end
     for name, _ in pairs(lockfile.content.plugins) do
