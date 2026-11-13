@@ -20,7 +20,6 @@ local remote_url = "https://github.com/"
 
 local pack_list = {}  -- absolute links for installations
 local config_list = {} -- Configurations for each plugin
-local pack_lockfile_content = {}
 local plugin_name_list = {} -- The actual names of the plugins
 
 ---@type SimplugConfig
@@ -57,29 +56,6 @@ function M.setup(user_config)
 end
 
 ---@brief Loads the json lockfile needed for vim.pack functions
-local function load_lockfile()
-    local f = io.open(config.pack_lockfile, "r") -- Open
-    if f then
-        local content = f:read("*a") -- Read full file
-        f:close()
-        if content and #content > 0 then -- check for nil or false and length <= 0
-            local ok, decoded = pcall(vim.fn.json_decode, content)
-            if ok and type(decoded) == "table" then
-                pack_lockfile_content = decoded
-            else
-                vim.notify("Failed to decode lockfile", vim.log.levels.ERROR)
-                return false
-            end
-        else
-            vim.notify("Lockfile empty", vim.log.levels.ERROR)
-            return false
-        end
-    else
-        vim.notify("Failed to open lockfile", vim.log.levels.ERROR)
-        return false
-    end
-    return true
-end
 
 ---@brief loads the plugin install list, installs the plugins and configures them based on user configs
 ---@param plug_list table the list of plugins to install and configure (must match the filename of the config file)
@@ -160,10 +136,17 @@ function M.clean(ignore_list)
             plugin_name_list[name] = "ignore"
         end
     end
+
+    ---@module 'lockfile'
+    local lockfile = require("lockfile")
+
+    -- If the confirm_clean option is false, clean all
     local user_input = 'y'
-    if not confirm_clean then user_input = 'Y' end -- If the confirm_clean option is false, clean all
-    if load_lockfile() then
-        for name, _ in pairs(pack_lockfile_content.plugins) do
+    if not confirm_clean then user_input = 'Y' end
+
+
+    if lockfile.load(config.pack_lockfile) then
+        for name, _ in pairs(lockfile.content.plugins) do
             if not plugin_name_list[name] and plugin_name_list[name] ~= "ignore" and name ~= "simplug.nvim" then
                 if not user_input:match("^[YN]") then
                     vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
@@ -176,17 +159,5 @@ function M.clean(ignore_list)
         end
     end
 end
-
--- vim.api.nvim_create_autocmd("SourceCmd", {
---     pattern = { "*vim", "*lua" },
---     callback = function(ev)
---         print(ev.file)
---         vim.cmd({
---             cmd = "source",
---             args = { ev.file },
---             mods = { noautocmd = true }
---         })
---     end
--- })
 
 return M
