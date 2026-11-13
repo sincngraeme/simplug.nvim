@@ -181,7 +181,7 @@ function M.clean(ignore_list)
     if not config.confirm_clean then user_input = 'Y' end
 
 
-    if lockfile.load(config.pack_lockfile) then
+    if not lockfile.load(config.pack_lockfile) then
         vim.notify("Error loading " .. config.pack_lockfile, vim.log.levels.ERROR)
         return
     end
