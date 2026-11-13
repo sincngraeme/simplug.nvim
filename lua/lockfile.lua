@@ -28,7 +28,7 @@ function M.load(file)
     return false
     end
 
-    M.lockfile_content = decoded
+    M.content = decoded
 
     return true
 end
