@@ -33,7 +33,7 @@ function M.register(names)
 
     vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
         if not opts.count then return end
-        M.update( opts.fargs )
+        require("simplug").update( opts.fargs )
     end, { nargs = '*', complete = completion_generation })
 end
 
