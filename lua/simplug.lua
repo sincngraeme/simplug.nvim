@@ -146,16 +146,18 @@ function M.clean(ignore_list)
 
 
     if lockfile.load(config.pack_lockfile) then
-        for name, _ in pairs(lockfile.content.plugins) do
-            if not plugin_name_list[name] and plugin_name_list[name] ~= "ignore" and name ~= "simplug.nvim" then
-                if not user_input:match("^[YN]") then
-                    vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
-                    user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
-                    user_input = user_input:match("^[yYnN]")
-                end
-                -- Clean if yes or Yes
-                if user_input:match("^[yY]") then vim.pack.del({ name }) end
+        vim.notfiy("Error loading " .. config.pack_lockfile, vim.log.levels.ERROR)
+        return
+    end
+    for name, _ in pairs(lockfile.content.plugins) do
+        if not plugin_name_list[name] and plugin_name_list[name] ~= "ignore" and name ~= "simplug.nvim" then
+            if not user_input:match("^[YN]") then
+                vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
+                user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
+                user_input = user_input:match("^[yYnN]")
             end
+            -- Clean if yes or Yes
+            if user_input:match("^[yY]") then vim.pack.del({ name }) end
         end
     end
 end
