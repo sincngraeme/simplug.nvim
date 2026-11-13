@@ -48,6 +48,11 @@ function M.setup(user_config)
     config.confirm_update = user_config.confirm_update or default_config.confirm_update
     config.confirm_clean = user_config.confirm_clean or default_config.confirm_clean
 
+    ---@module 'commands'
+    local cmds = require("commands")
+
+    cmds.register(plugin_name_list, M.update, M.load)
+
     return M
 end
 
@@ -171,10 +176,6 @@ function M.clean(ignore_list)
         end
     end
 end
-
----@module 'commands'
-local cmds = require("commands")
-cmds.register(plugin_name_list, M.update, M.load)
 
 -- vim.api.nvim_create_autocmd("SourceCmd", {
 --     pattern = { "*vim", "*lua" },
