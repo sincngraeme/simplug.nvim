@@ -1,34 +1,59 @@
+---@diagnostic disable: undefined-global vim
+---
+---@class Simplug
 local M = {}
 
-local default_plugin_dir = "plugins"
 local remote_url = "https://github.com/"
+
+---@alias SimplugSpec { 
+---link: string,            --- link: link to git repo containing plugin
+---config: function,        --- config: function to run at config
+---}
+
+---@alias SimplugConfig {
+---plugin_dir: string,          --- plugin_dir: location to load plugin configs from (can also be passed to the load function)
+---pack_lockfile: string,       --- pack_lockfile: location of the lockfile if not in the default location
+---always_update: boolean,      --- always_update: whether or not to always run pack.update with load
+---confirm_update: boolean,     --- confirm_update: whether or not to ask the user for confirmation when updating
+---confirm_clean: boolean,      --- confirm_clean: whether or not to ask the user for confirmations when cleaning
+---}
+
 local pack_list = {}  -- absolute links for installations
 local config_list = {} -- Configurations for each plugin
 local pack_lockfile_content = {}
-local pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json"
 local plugin_name_list = {} -- The actual names of the plugins
-local always_update = false
-local confirm_update = true
-local confirm_clean = false
 
----@brief Setup function for the module
----@param simplug_config { 
-    ---plugin_dir: string,       --- plugin_dir: location to load plugin configs from (can also be passed to the load function)
-    ---always_update: boolean,   --- always_update: whether or not to always run pack.update with load
-    ---pack_lockfile: string,    --- pack_lockfile: location of the lockfile if not in the default location
-    ---confirm_update: boolean,  --- confirm_update: whether or not to ask the user for confirmation when updating
-    ---confirm_clean: boolean }  --- confirm_clean: whether or not to ask the user for confirmations when cleaning
-function M.setup(simplug_config)
-    default_plugin_dir = simplug_config.plugin_dir or default_plugin_dir
-    always_update = simplug_config.always_update or always_update
-    pack_lockfile = simplug_config.pack_lockfile or pack_lockfile
-    confirm_update = simplug_config.confirm_update or confirm_update
-    confirm_clean = simplug_config.confirm_clean or confirm_clean
+---@type SimplugConfig
+local default_config = {
+    plugin_dir = "plugins",
+    pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json",
+    always_update = false,
+    confirm_update = true,
+    confirm_clean = false
+}
+
+---@type SimplugConfig
+local config = {}
+
+---@type table<string, SimplugSpec>
+local plugin_list = {}
+
+---@brief   Setup function for the module
+---@param   user_config SimplugConfig 
+---@return  Simplug --- module instance
+function M.setup(user_config)
+    config.plugin_dir = user_config.plugin_dir or default_config.plugin_dir
+    config.pack_lockfile = user_config.pack_lockfile or default_config.pack_lockfile
+    config.always_update = user_config.always_update or default_config.always_update
+    config.confirm_update = user_config.confirm_update or default_config.confirm_update
+    config.confirm_clean = user_config.confirm_clean or default_config.confirm_clean
+
+    return M
 end
 
 ---@brief Loads the json lockfile needed for vim.pack functions
 local function load_lockfile()
-    local f = io.open(pack_lockfile, "r") -- Open
+    local f = io.open(config.pack_lockfile, "r") -- Open
     if f then
         local content = f:read("*a") -- Read full file
         f:close()
@@ -52,12 +77,12 @@ local function load_lockfile()
 end
 
 ---@brief loads the plugin install list, installs the plugins and configures them based on user configs
----@param plugin_list table the list of plugins to install and configure (must match the filename of the config file)
----@param plugin_dir string? the directory to check for plugins if not the default or user configured default path
-function M.load(plugin_list, plugin_dir) plugin_dir = plugin_dir or default_plugin_dir
-    for _, plugin in ipairs(plugin_list) do
+---@param plug_list table the list of plugins to install and configure (must match the filename of the config file)
+---@param plug_dir string? the directory to check for plugins if not the default or user configured default path
+function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
+    for _, plugin in ipairs(plug_list) do
         -- Try to load the module
-        local ok, module = pcall(require, plugin_dir .. "." .. plugin)
+        local ok, module = pcall(require, plug_dir .. "." .. plugin)
         if not ok then
             vim.notify("Failed to Locate Module: " .. plugin, vim.log.levels.ERROR)
         else
@@ -93,7 +118,7 @@ function M.load(plugin_list, plugin_dir) plugin_dir = plugin_dir or default_plug
     -- Install
     vim.pack.add(pack_list)
     -- Check for update
-    if always_update then
+    if config.always_update then
         M.update({})
     end
     -- Configure
@@ -102,7 +127,7 @@ function M.load(plugin_list, plugin_dir) plugin_dir = plugin_dir or default_plug
             -- Do nothing
         else
             if type(plugin_config) == "table" then
-                vim.notify("Error loading config for: " .. plugin_list[i] .. "Config must be a function",
+                vim.notify("Error loading config for: " .. plug_list[i] .. "Config must be a function",
                     vim.log.levels.ERROR)
             else
                 plugin_config()
@@ -116,9 +141,9 @@ end
 ---@param update_list table? the list of plugins to update (optional, does all otherwise)
 function M.update(update_list)
     if type(update_list) == "table" and next(update_list) ~= nil then
-        vim.pack.update(update_list, { force = not confirm_update })
+        vim.pack.update(update_list, { force = not config.confirm_update })
     else
-        vim.pack.update(nil, { force = not confirm_update })
+        vim.pack.update(nil, { force = not config.confirm_update })
     end
 end
 
@@ -147,40 +172,19 @@ function M.clean(ignore_list)
     end
 end
 
-local completion_generation = function(arg_lead, cmd_line, cursor_pos)
-    _ = cmd_line
-    _ = cursor_pos
+local cmds = require("commands")
+cmds.register(plugin_name_list)
 
-    local command_line_completions = {}
-
-	for key, _ in pairs(plugin_name_list) do
-        table.insert(command_line_completions, key)
-    end
-
-    return vim.tbl_filter(function(choice)
-        return vim.startswith(choice, arg_lead)
-    end, command_line_completions)
-end
-
-
---- CREATE USER COMMANDS FOR MANUAL USAGE ---
-
-vim.api.nvim_create_user_command("SimplugLoad", function(opts)
-    if opts.bang then
-        local dir = table.remove(opts.fargs, 1)
-        if type(dir) ~= "string" then
-            vim.notify("Error updating plugin: expected 'string' as argument 1", vim.log.levels.ERROR)
-            return
-        end
-        M.load(opts.fargs, dir)
-        return
-    end
-    M.load(opts.fargs)
-end, { bang = true, nargs = '+', complete = completion_generation })
-
-vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
-    if not opts.count then return end
-    M.update( opts.fargs )
-end, { nargs = '*', complete = completion_generation })
+-- vim.api.nvim_create_autocmd("SourceCmd", {
+--     pattern = { "*vim", "*lua" },
+--     callback = function(ev)
+--         print(ev.file)
+--         vim.cmd({
+--             cmd = "source",
+--             args = { ev.file },
+--             mods = { noautocmd = true }
+--         })
+--     end
+-- })
 
 return M
