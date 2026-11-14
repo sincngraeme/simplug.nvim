@@ -42,6 +42,9 @@ function M.register(names, update, load)
 
     vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
         if not opts.count then return end
+        if type(opts.fargs) ~= 'function' then
+            vim.notify("Failed to update: expected arg table, got " .. type(opts.fargs))
+        end
         update( opts.fargs )
     end, { nargs = '*', complete = completion_generation })
 end
