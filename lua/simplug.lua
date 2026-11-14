@@ -112,13 +112,11 @@ function M.load(plug_list, force, plug_dir)
             spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/([^%/]*)$")
         end
 
-        -- check if there is already an entry
+        -- check if there is already an entry which has been installed and loaded
         ---@type SimplugRegistryEntry
         local existing_entry = plugin_registry[plugin]
-        if existing_entry then
-            if existing_entry.installed then
-                goto continue -- TOOD: should we update config?
-            end
+        if existing_entry and existing_entry.installed and existing_entry.status == "loaded" then
+            goto continue
         end
 
         -- commit the changes to the registry
