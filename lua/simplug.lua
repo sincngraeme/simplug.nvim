@@ -105,7 +105,7 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
         -- if no name was supplied, then use the repo url 
         -- (vim.pack.add does this but we need the field too)
         if not spec.origin.name then
-            spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/(.*)$")
+            spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/([^%/]*)$")
         end
 
         -- check if there is already an entry

@@ -22,7 +22,7 @@ function M.register(registry, update, load)
 
 	---@type string, SimplugRegistryEntry
 	for _, value in pairs(registry) do
-        print(vim.inspect(value))
+        -- print(vim.inspect(value))
 		if value.spec and value.spec.origin then
             local origin = value.spec.origin
             if type(origin) == "string" then
