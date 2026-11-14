@@ -51,17 +51,6 @@ function M.setup(user_config)
     config.confirm_update = user_config.confirm_update or default_config.confirm_update
     config.confirm_clean = user_config.confirm_clean or default_config.confirm_clean
 
-    ---@module 'commands'
-    local cmds = require("commands")
-
-    cmds.register(plugin_name_list, M.update, M.load)
-
-    vim.api.nvim_create_autocmd('PackChanged', {
-        callback = function()
-            cmds.register(plugin_name_list, M.update, M.load)
-        end
-    })
-
     return M
 end
 
@@ -157,6 +146,12 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
             end
         end
     end
+
+    -- Update the command completion
+    ---@module 'commands'
+    local cmds = require("commands")
+
+    cmds.register(plugin_name_list, M.update, M.load)
 end
 
 ---@brief Update installed plugins
