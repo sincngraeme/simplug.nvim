@@ -159,6 +159,7 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
     local cmds = require("commands")
 
     cmds.register(plugin_registry, M.update, M.load)
+    print( vim.inspect(plugin_registry) )
 end
 
 ---@brief Update installed plugins
@@ -214,7 +215,8 @@ function M.clean(ignore_list)
         return
     end
     for name, _ in pairs(lockfile.content.plugins) do
-        if plugin_registry[name] and plugin_registry[name].noclean and name ~= "simplug.nvim" then
+        local entry = plugin_registry[name]
+        if entry and entry.noclean and name ~= "simplug.nvim" then
             if not user_input:match("^[YN]") then
                 vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
                 user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
