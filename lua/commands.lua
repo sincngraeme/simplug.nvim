@@ -13,26 +13,25 @@ function M.register(registry, update, load)
         return M
     end
 
-    ---@type string[]
-    local completions = {}
-
-    ---@type string, SimplugRegistryEntry
-    for _, value in pairs(registry) do
-        if not value.spec and not value.spec.origin then
-            vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
-        else
-            if type(value.spec.origin) == "string" then
-                table.insert(completions, value.spec.origin)
-            elseif type(value.spec.origin) == "table" then
-                table.insert(completions, value.spec.origin.name)
-            end
-            -- if it's somehow something else, just skip
-        end
-    end
-
     local completion_generation = function(arg_lead, cmd_line, cursor_pos)
         _ = cmd_line
         _ = cursor_pos
+
+	---@type string[]
+	local completions = {}
+
+	---@type string, SimplugRegistryEntry
+	for _, value in pairs(registry) do
+	    if not value.spec and not value.spec.origin then
+            vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
+		else
+		    if type(value.spec.origin) == "string" then
+                table.insert(completions, value.spec.origin)
+		    elseif type(value.spec.origin) == "table" then
+                table.insert(completions, value.spec.origin.name)
+		    end
+		    -- if it's somehow something else, just skip
+		end
 
         return vim.tbl_filter(function(choice)
             return vim.startswith(choice, arg_lead)
