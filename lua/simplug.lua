@@ -6,7 +6,6 @@ local M = {}
 ---@alias SimplugSpec { 
 ---origin: string|vim.pack.Spec,     --- link: link to git repo containing plugin
 ---config: function|nil,        --- config: function to run at config
----noload: boolean,
 ---}
 
 ---@alias SimplugRegistryEntry {
@@ -59,9 +58,8 @@ end
 
 ---@brief loads the plugin install list, installs the plugins and configures them based on user configs
 ---@param plug_list table the list of plugins to install and configure (must match the filename of the config file)
----@param force boolean whether or not to force loading of noload functions
 ---@param plug_dir string? the directory to check for plugins if not the default or user configured default path
-function M.load(plug_list, force, plug_dir)
+function M.load(plug_list, plug_dir)
     plug_dir = plug_dir or config.plugin_dir
 
     ---@type vim.pack.Spec[]
@@ -121,9 +119,7 @@ function M.load(plug_list, force, plug_dir)
         -- commit the changes to the registry
         plugin_registry[plugin] = { spec = spec, installed = true, status = "loading" }
         table.insert(plugin_name_list, plugin)
-        if force or not spec.noload then
-            table.insert(plugin_spec_list, spec.origin)
-        end
+        table.insert(plugin_spec_list, spec.origin)
 
         :: continue ::
     end
@@ -145,12 +141,8 @@ function M.load(plug_list, force, plug_dir)
 	    end
 
             if type(entry.spec.config) == "function" then
-                if not force and entry.spec.noload then
-                    entry.status = "unloaded"
-                else
-                    entry.spec.config()
-                    entry.status = "loaded"
-                end
+                entry.spec.config()
+                entry.status = "loaded"
             elseif type(entry.spec.config) == "nil" then
                 entry.status = "loaded"
             else

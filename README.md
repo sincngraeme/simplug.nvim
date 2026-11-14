@@ -18,7 +18,7 @@ Please ensure you are using the most recent release.
 
 | Pros                                    | Cons                                                      |
 | --------------------------------------- | --------------------------------------------------------- |
-| - Simple and lightweight                | - No Lazy loading (limitation in builtin package manager) |
+| - Simple and lightweight                | - No Lazy loading (yet...)                                |
 | - Easy plugin depency management        | - No fancy menus                                          |
 | - Quickly unload plugins at will        | - Honestly I don't frequently maintain this               |
 | - Control over your directory structure | |
@@ -50,8 +50,7 @@ Install with git or download manually (this will not respond to updates so I don
 git clone "https://github.com/sincngraeme/simplug.nvim"
 ```
 
-If you choose this method, just copy the `simplug.lua` file into your config somewhere and require just that
-file.
+If you choose this method, just copy the contents of the lua folder into your config somewhere and require just that .
 
 ```lua
 require("simplug").setup()
@@ -125,7 +124,7 @@ For example separate colorscheme and plugin directories:
 simplug.load({
     "kanagawa",
     "tokyonight",
-}, "colorschemes")
+}, false, "colorschemes")
 
 -- Now we know which colorscheme to load
 vim.cmd.colorscheme("kanagawa")
@@ -139,7 +138,10 @@ simplug.load({
 ```
 
 You may also separate your plugin load tables even if they are in the same directory, though this is likely 
-slower than loading them all in one (haven't tested, you can if you care).
+slower than loading them all in one (haven't benchmarked, you can if you care).
+
+When you specify the directory, the `force` argument is also required. You probably want this to always be false
+since, when true, it causes `load` to ignore the `noload` option in every plugin spec.
 
 Once all plugins have been loaded, it is recommended to call `.clean()`. This function will check your
 `nvim-pack-lock.json` file for plugins that you have not loaded but are still installed, and uninstall them. If

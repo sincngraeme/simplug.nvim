@@ -37,10 +37,10 @@ function M.register(registry, simplug_update, simplug_load)
                 vim.notify("Error updating plugin: expected 'string' as argument 1", vim.log.levels.ERROR)
                 return
             end
-            simplug_load(opts.fargs, true, dir)
+            simplug_load(opts.fargs, dir)
             return
         else
-            simplug_load(opts.fargs, true)
+            simplug_load(opts.fargs)
         end
     end, {
         bang = true,
