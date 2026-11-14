@@ -134,7 +134,7 @@ function M.load(plug_list, force, plug_dir)
 
     -- Configure
     ---@type integer, string
-    for _, name in ipairs(plugin_name_list) do
+    for _, name in ipairs(plug_list) do
         if not name then
             -- Do nothing
         else
