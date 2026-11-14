@@ -64,7 +64,6 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
     ---@type vim.pack.Spec[]
     local plugin_spec_list = {}
 
-
     if type(plug_dir) ~= "string" then
         vim.notify("Invalid type for plugin directory: " .. type(plug_dir), vim.log.levels.ERROR)
         return
