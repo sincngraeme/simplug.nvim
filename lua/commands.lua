@@ -7,6 +7,11 @@ local M = {}
 ---@param   load function
 function M.register(names, update, load)
 
+    if not (names and update and load) then
+        vim.notify("Failed to generate command completions", vim.log.levels.ERROR)
+        return M
+    end
+
     local completion_generation = function(arg_lead, cmd_line, cursor_pos)
         _ = cmd_line
         _ = cursor_pos

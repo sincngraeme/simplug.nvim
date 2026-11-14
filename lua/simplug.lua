@@ -3,8 +3,6 @@
 ---@class Simplug
 local M = {}
 
-local remote_url = "https://github.com/"
-
 ---@alias SimplugSpec { 
 ---origin: string|vim.pack.Spec,     --- link: link to git repo containing plugin
 ---config: function|nil,        --- config: function to run at config
@@ -56,7 +54,11 @@ function M.setup(user_config)
     ---@module 'commands'
     local cmds = require("commands")
 
-    cmds.register(plugin_name_list, M.update, M.load)
+    vim.api.nvim_create_autocmd('PackChanged', {
+        callback = function()
+            cmds.register(plugin_name_list, M.update, M.load)
+        end
+    })
 
     return M
 end
