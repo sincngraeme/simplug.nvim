@@ -13,6 +13,7 @@ local remote_url = "https://github.com/"
 ---@alias SimplugRegistryEntry {
 ---spec: SimplugSpec,
 ---installed: boolean,
+---noclean: boolean,
 ---status: "loaded" | "loading" | "unloaded",
 ---}
 
@@ -169,7 +170,12 @@ end
 function M.clean(ignore_list)
     if ignore_list then
         for _, name in ipairs(ignore_list) do
-            plugin_name_list[name] = "ignore"
+            if not plugin_registry[name] then
+                vim.notify("Plugin" .. name .. "in ignore list, but not in registry",
+                    vim.log.levels.ERROR)
+            else
+                plugin_registry[name].noclean = true
+            end
         end
     end
 
@@ -186,7 +192,7 @@ function M.clean(ignore_list)
         return
     end
     for name, _ in pairs(lockfile.content.plugins) do
-        if not plugin_name_list[name] and plugin_name_list[name] ~= "ignore" and name ~= "simplug.nvim" then
+        if plugin_registry[name] and plugin_registry[name].noclean and name ~= "simplug.nvim" then
             if not user_input:match("^[YN]") then
                 vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
                 user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
