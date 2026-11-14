@@ -32,6 +32,7 @@ function M.register(registry, update, load)
 		    end
 		    -- if it's somehow something else, just skip
 		end
+	end
 
         return vim.tbl_filter(function(choice)
             return vim.startswith(choice, arg_lead)
