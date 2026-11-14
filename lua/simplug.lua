@@ -59,9 +59,9 @@ end
 
 ---@brief loads the plugin install list, installs the plugins and configures them based on user configs
 ---@param plug_list table the list of plugins to install and configure (must match the filename of the config file)
+---@param force boolean whether or not to force loading of noload functions
 ---@param plug_dir string? the directory to check for plugins if not the default or user configured default path
----@param force boolean? whether or not to force loading of noload functions
-function M.load(plug_list, plug_dir, force)
+function M.load(plug_list, force, plug_dir)
     plug_dir = plug_dir or config.plugin_dir
     force = force or false
 
