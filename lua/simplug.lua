@@ -124,7 +124,7 @@ function M.load(plug_list, force, plug_dir)
         -- commit the changes to the registry
         plugin_registry[plugin] = { spec = spec, installed = true, status = "loading" }
         table.insert(plugin_name_list, plugin)
-        if not spec.noload or force then
+        if force or not spec.noload then
             table.insert(plugin_spec_list, spec.origin)
         end
 
