@@ -12,16 +12,12 @@ function M.register(names, update, load)
         return M
     end
 
+    table.insert(names, "simplug.nvim")
+
     local completion_generation = function(arg_lead, cmd_line, cursor_pos)
         _ = cmd_line
         _ = cursor_pos
 
-        local command_line_completions = {}
-
-        -- for key, _ in pairs(names) do
-        --     table.insert(command_line_completions, key)
-        -- end
-        --
         return vim.tbl_filter(function(choice)
             return vim.startswith(choice, arg_lead)
         end, names)
