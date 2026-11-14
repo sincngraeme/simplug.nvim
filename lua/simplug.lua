@@ -151,6 +151,8 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
                 vim.log.levels.ERROR)
             end
         end
+
+	:: continue ::
     end
 
     -- Update the command completion
