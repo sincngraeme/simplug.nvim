@@ -169,22 +169,25 @@ function M.update(update_list)
     if type(update_list) == "table" and update_list ~= {} then
 
         ---@type vim.pack.Spec[]
-        local specs = {}
+        local repo_names = {}
 
         ---@type integer, string
         for _, name in ipairs(update_list) do
             local entry = plugin_registry[name]
-            if entry and entry.spec and entry.spec.origin then
-                table.insert(specs, entry.spec.origin)
+            if entry
+            and entry.spec
+            and entry.spec.origin
+            and entry.spec.origin.name then
+                table.insert(repo_names, entry.spec.origin.name)
             else
                 vim.notify("Failed to find entry in registry for plugin " .. name,
                     vim.log.levels.ERROR)
             end
         end
 
-        print(vim.inspect(specs))
+        print(vim.inspect(repo_names))
 
-        vim.pack.update(specs, { force = not config.confirm_update })
+        vim.pack.update(repo_names, { force = not config.confirm_update })
     else
         vim.pack.update(nil, { force = not config.confirm_update })
     end
