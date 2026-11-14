@@ -2,17 +2,33 @@ local M = {}
 --- CREATE USER COMMANDS FOR MANUAL USAGE ---
 
 ---@brief   registers the user commands and autocommands for Simplug
----@param   names string[]
+---@param   registry table<string, SimplugRegistryEntry>
 ---@param   update function
 ---@param   load function
-function M.register(names, update, load)
+function M.register(registry, update, load)
 
-    if not names and not update and not load and next(names) then
-        vim.notify("Failed to generate command completions", vim.log.levels.ERROR)
+    if not registry and not update and not load and next(registry) then
+        vim.notify("Failed to generate command completions, invalid arg to simplug.resister",
+            vim.log.levels.ERROR)
         return M
     end
 
-    table.insert(names, "simplug.nvim")
+    ---@type string[]
+    local completions = {}
+
+    ---@type string, SimplugRegistryEntry
+    for _, value in pairs(registry) do
+        if not value.spec and not value.spec.origin then
+            vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
+        else
+            if type(value.spec.origin) == "string" then
+                table.insert(completions, value.spec.origin)
+            elseif type(value.spec.origin) == "table" then
+                table.insert(completions, value.spec.origin.name)
+            end
+            -- if it's somehow something else, just skip
+        end
+    end
 
     local completion_generation = function(arg_lead, cmd_line, cursor_pos)
         _ = cmd_line
@@ -20,7 +36,7 @@ function M.register(names, update, load)
 
         return vim.tbl_filter(function(choice)
             return vim.startswith(choice, arg_lead)
-        end, names)
+        end, completions)
     end
 
     vim.api.nvim_create_user_command("SimplugLoad", function(opts)

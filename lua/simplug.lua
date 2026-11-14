@@ -137,7 +137,7 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
         else
             local entry = plugin_registry[name]
 
-	    if not entry then 
+	    if not entry then
             vim.notify("Plugin " .. name .. " not found in registry", vim.log.levels.ERROR)
             goto continue
 	    end
@@ -152,7 +152,7 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
             end
         end
 
-	:: continue ::
+        :: continue ::
     end
 
     -- Update the command completion
