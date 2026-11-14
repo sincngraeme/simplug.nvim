@@ -159,7 +159,6 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
     local cmds = require("commands")
 
     cmds.register(plugin_registry, M.update, M.load)
-    print( vim.inspect(plugin_registry) )
 end
 
 ---@brief Update installed plugins
@@ -184,8 +183,6 @@ function M.update(update_list)
                     vim.log.levels.ERROR)
             end
         end
-
-        print(vim.inspect(repo_names))
 
         vim.pack.update(repo_names, { force = not config.confirm_update })
     else
