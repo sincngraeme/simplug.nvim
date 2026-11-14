@@ -166,7 +166,7 @@ end
 ---@param update_list string[]? the list of plugin names to update (optional, does all otherwise)
 function M.update(update_list)
 
-    if type(update_list) == "table" and update_list ~= {} then
+    if type(update_list) == "table" and next(update_list) ~= nil then
 
         ---@type vim.pack.Spec[]
         local repo_names = {}
