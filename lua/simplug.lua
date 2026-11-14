@@ -63,7 +63,6 @@ end
 ---@param plug_dir string? the directory to check for plugins if not the default or user configured default path
 function M.load(plug_list, force, plug_dir)
     plug_dir = plug_dir or config.plugin_dir
-    force = force or false
 
     ---@type vim.pack.Spec[]
     local plugin_spec_list = {}
