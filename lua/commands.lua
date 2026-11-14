@@ -37,6 +37,8 @@ function M.register(registry, update, load)
 		end
 	end
 
+    table.insert(completions, 'simplug.nvim') -- wont be in the list otherwise
+
         return vim.tbl_filter(function(choice)
             return vim.startswith(choice, arg_lead)
         end, completions)
