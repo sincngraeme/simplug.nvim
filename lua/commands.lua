@@ -7,7 +7,7 @@ local M = {}
 ---@param   load function
 function M.register(names, update, load)
 
-    if not (names and update and load) then
+    if not (names and update and load and next(names)) then
         vim.notify("Failed to generate command completions", vim.log.levels.ERROR)
         return M
     end
