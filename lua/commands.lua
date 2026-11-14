@@ -3,11 +3,11 @@ local M = {}
 
 ---@brief   registers the user commands and autocommands for Simplug
 ---@param   registry table<string, SimplugRegistryEntry>
----@param   update function
----@param   load function
-function M.register(registry, update, load)
+---@param   simplug_update function
+---@param   simplug_load function
+function M.register(registry, simplug_update, simplug_load)
 
-    if not registry and not update and not load and next(registry) then
+    if not registry and not simplug_update and not simplug_load and next(registry) then
         vim.notify("Failed to generate command completions, invalid arg to simplug.resister",
             vim.log.levels.ERROR)
         return M
@@ -37,10 +37,10 @@ function M.register(registry, update, load)
                 vim.notify("Error updating plugin: expected 'string' as argument 1", vim.log.levels.ERROR)
                 return
             end
-            load(opts.fargs, dir)
+            simplug_load(opts.fargs, dir, true)
             return
         else
-            load(opts.fargs)
+            simplug_load(opts.fargs, true)
         end
     end, {
         bang = true,
@@ -51,7 +51,7 @@ function M.register(registry, update, load)
 
     vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
         if not opts.count then return end
-        update( opts.fargs )
+        simplug_update( opts.fargs )
     end, {
         nargs = '*',
         complete = completion_generation,
