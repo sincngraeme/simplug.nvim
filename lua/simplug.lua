@@ -182,6 +182,8 @@ function M.update(update_list)
             end
         end
 
+        print(vim.inspect(specs))
+
         vim.pack.update(specs, { force = not config.confirm_update })
     else
         vim.pack.update(nil, { force = not config.confirm_update })
