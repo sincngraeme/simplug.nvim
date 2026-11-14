@@ -146,11 +146,12 @@ function M.load(plug_list, force, plug_dir)
 	    end
 
             if type(entry.spec.config) == "function" then
-                if entry.spec.noload and not force then
+                if not force and entry.spec.noload then
                     entry.status = "unloaded"
                 else
                     entry.spec.config()
                     entry.status = "loaded"
+                    vim.notify("Loaded!", vim.log.levels.INFO)
                 end
             elseif type(entry.spec.config) == "nil" then
                 entry.status = "loaded"
