@@ -138,8 +138,8 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
             local entry = plugin_registry[name]
 
 	    if not entry then 
-		vim.notify("Plugin " .. name .. " not found in registry", vim.log.levels.ERROR)
-		goto continue
+            vim.notify("Plugin " .. name .. " not found in registry", vim.log.levels.ERROR)
+            goto continue
 	    end
 
             if type(entry.spec.config) == "function"
