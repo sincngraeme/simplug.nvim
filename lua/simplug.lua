@@ -159,7 +159,7 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
     ---@module 'commands'
     local cmds = require("commands")
 
-    cmds.register(plugin_name_list, M.update, M.load)
+    cmds.register(plugin_registry, M.update, M.load)
 end
 
 ---@brief Update installed plugins
