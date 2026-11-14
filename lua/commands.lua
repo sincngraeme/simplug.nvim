@@ -21,7 +21,7 @@ function M.register(registry, update, load)
 	local completions = {}
 
 	---@type string, SimplugRegistryEntry
-	for _, value in pairs(registry) do
+	for _, value in ipairs(registry) do
 		if not value.spec or not value.spec.origin then
 		    vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
 		else
