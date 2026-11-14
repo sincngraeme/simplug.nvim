@@ -18,13 +18,13 @@ function M.register(names, update, load)
 
         local command_line_completions = {}
 
-        for key, _ in pairs(names) do
-            table.insert(command_line_completions, key)
-        end
-
+        -- for key, _ in pairs(names) do
+        --     table.insert(command_line_completions, key)
+        -- end
+        --
         return vim.tbl_filter(function(choice)
             return vim.startswith(choice, arg_lead)
-        end, command_line_completions)
+        end, names)
     end
 
     vim.api.nvim_create_user_command("SimplugLoad", function(opts)
