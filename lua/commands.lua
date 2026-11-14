@@ -38,15 +38,21 @@ function M.register(names, update, load)
             return
         end
         load(opts.fargs)
-    end, { bang = true, nargs = '+', complete = completion_generation })
+    end, {
+        bang = true,
+        nargs = '+',
+        complete = completion_generation,
+        desc = "Loads the given plugins, bang: update plugins from dir (arg 1)"
+    })
 
     vim.api.nvim_create_user_command("SimplugUpdate", function(opts)
         if not opts.count then return end
-        if type(opts.fargs) ~= 'function' then
-            vim.notify("Failed to update: expected arg table, got " .. type(opts.fargs))
-        end
         update( opts.fargs )
-    end, { nargs = '*', complete = completion_generation })
+    end, {
+        nargs = '*',
+        complete = completion_generation,
+        desc = "Updates the given plugins or all if empty"
+    })
 end
 
 return M
