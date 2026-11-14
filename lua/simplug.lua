@@ -174,7 +174,7 @@ function M.update(update_list)
         ---@type integer, string
         for _, name in ipairs(update_list) do
             local entry = plugin_registry[name]
-            if entry.spec.origin then
+            if entry and entry.spec and entry.spec.origin then
                 table.insert(specs, entry.spec.origin)
             else
                 vim.notify("Failed to find entry in registry for plugin " .. name,
