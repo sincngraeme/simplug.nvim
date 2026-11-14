@@ -27,8 +27,9 @@ function M.register(registry, update, load)
                 table.insert(completions, value.spec.origin)
             elseif type(value.spec.origin) == "table" then
                 table.insert(completions, value.spec.origin.name)
+            else
+                vim.notify("Invalid type for completion generation", vim.log.levels.ERROR)
             end
-            -- if it's somehow something else, just skip
 		else
             vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
 		end
