@@ -17,27 +17,13 @@ function M.register(registry, update, load)
         _ = cmd_line
         _ = cursor_pos
 
-	---@type string[]
-	local completions = {}
+        ---@type string[]
+        local completions = {}
 
-	---@type string, SimplugRegistryEntry
-	for _, value in pairs(registry) do
-        -- print(vim.inspect(value))
-		if value.spec and value.spec.origin then
-            local origin = value.spec.origin
-            if type(origin) == "string" then
-                table.insert(completions, string.match(origin, "%/(.*)$"))
-            elseif type(origin) == "table" then
-                table.insert(completions, origin.name)
-            else
-                vim.notify("Invalid type for completion generation", vim.log.levels.ERROR)
-            end
-		else
-            vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
-		end
-	end
-
-    table.insert(completions, 'simplug.nvim') -- wont be in the list otherwise
+        ---@type string, SimplugRegistryEntry
+        for name, _ in pairs(registry) do
+            table.insert(completions, name)
+        end
 
         return vim.tbl_filter(function(choice)
             return vim.startswith(choice, arg_lead)
@@ -53,8 +39,9 @@ function M.register(registry, update, load)
             end
             load(opts.fargs, dir)
             return
+        else
+            load(opts.fargs)
         end
-        load(opts.fargs)
     end, {
         bang = true,
         nargs = '+',

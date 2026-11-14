@@ -162,10 +162,26 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
 end
 
 ---@brief Update installed plugins
----@param update_list string[]? the list of plugins to update (optional, does all otherwise)
+---@param update_list string[]? the list of plugin names to update (optional, does all otherwise)
 function M.update(update_list)
-    if type(update_list) == "table" and next(update_list) ~= nil then
-        vim.pack.update(update_list, { force = not config.confirm_update })
+
+    if type(update_list) == "table" and update_list ~= {} then
+
+        ---@type vim.pack.Spec[]
+        local specs = {}
+
+        ---@type integer, string
+        for _, name in ipairs(update_list) do
+            local entry = plugin_registry[name]
+            if entry.spec.origin then
+                table.insert(specs, entry.spec.origin)
+            else
+                vim.notify("Failed to find entry in registry for plugin " .. name,
+                    vim.log.levels.ERROR)
+            end
+        end
+
+        vim.pack.update(specs, { force = not config.confirm_update })
     else
         vim.pack.update(nil, { force = not config.confirm_update })
     end
