@@ -23,10 +23,11 @@ function M.register(registry, update, load)
 	---@type string, SimplugRegistryEntry
 	for _, value in pairs(registry) do
 		if value.spec and value.spec.origin then
-            if type(value.spec.origin) == "string" then
-                table.insert(completions, value.spec.origin)
-            elseif type(value.spec.origin) == "table" then
-                table.insert(completions, value.spec.origin.name)
+            local origin = value.spec.origin
+            if type(origin) == "string" then
+                table.insert(completions, string.match(origin, "%/(.*)$"))
+            elseif type(origin) == "table" then
+                table.insert(completions, origin.name)
             else
                 vim.notify("Invalid type for completion generation", vim.log.levels.ERROR)
             end
