@@ -6,6 +6,7 @@ local M = {}
 ---@alias SimplugSpec { 
 ---origin: string|vim.pack.Spec,     --- link: link to git repo containing plugin
 ---config: function|nil,        --- config: function to run at config
+---noload: boolean,
 ---}
 
 ---@alias SimplugRegistryEntry {
@@ -19,7 +20,7 @@ local M = {}
 ---plugin_dir: string,          --- plugin_dir: location to load plugin configs from (can also be passed to the load function)
 ---pack_lockfile: string,       --- pack_lockfile: location of the lockfile if not in the default location
 ---always_update: boolean,      --- always_update: whether or not to always run pack.update with load
----confirm_update: boolean,     --- confirm_update: whether or not to ask the user for confirmation when updating
+---confirm_install: boolean,     --- confirm_install: whether or not to ask the user for confirmation when updating
 ---confirm_clean: boolean,      --- confirm_clean: whether or not to ask the user for confirmations when cleaning
 ---}
 
@@ -31,7 +32,7 @@ local default_config = {
     plugin_dir = "plugins",
     pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json",
     always_update = false,
-    confirm_update = true,
+    confirm_install = true,
     confirm_clean = false
 }
 
@@ -48,13 +49,26 @@ function M.setup(user_config)
     config.plugin_dir = user_config.plugin_dir or default_config.plugin_dir
     config.pack_lockfile = user_config.pack_lockfile or default_config.pack_lockfile
     config.always_update = user_config.always_update or default_config.always_update
-    config.confirm_update = user_config.confirm_update or default_config.confirm_update
+    config.confirm_install = user_config.confirm_install or default_config.confirm_install
     config.confirm_clean = user_config.confirm_clean or default_config.confirm_clean
 
     return M
 end
 
----@brief Loads the json lockfile needed for vim.pack functions
+local force_load = false
+
+-- Internal wrappers to force update of noload plugins
+local force_simplug_load = function(plug_list, plug_dir)
+    force_load = true
+    M.load(plug_list, plug_dir)
+    force_load = false
+end
+
+local force_simplug_update = function(update_list)
+    force_load = true
+    M.update(update_list)
+    force_load = false
+end
 
 ---@brief loads the plugin install list, installs the plugins and configures them based on user configs
 ---@param plug_list table the list of plugins to install and configure (must match the filename of the config file)
@@ -64,6 +78,9 @@ function M.load(plug_list, plug_dir)
 
     ---@type vim.pack.Spec[]
     local plugin_spec_list = {}
+
+    ---@type vim.pack.Spec[]
+    local noload_plugin_spec_list = {}
 
     if type(plug_dir) ~= "string" then
         vim.notify("Invalid type for plugin directory: " .. type(plug_dir), vim.log.levels.ERROR)
@@ -119,13 +136,21 @@ function M.load(plug_list, plug_dir)
         -- commit the changes to the registry
         plugin_registry[plugin] = { spec = spec, installed = true, status = "loading" }
         table.insert(plugin_name_list, plugin)
-        table.insert(plugin_spec_list, spec.origin)
+        if force_load or not spec.noload then
+            table.insert(plugin_spec_list, spec.origin)
+        else
+            table.insert(noload_plugin_spec_list, spec.origin)
+        end
 
         :: continue ::
     end
 
     -- Install
-    vim.pack.add(plugin_spec_list)
+    vim.pack.add(plugin_spec_list, { confirm = config.confirm_install })
+
+    if #noload_plugin_spec_list ~= 0 then
+        vim.pack.add(noload_plugin_spec_list, { load = false, confirm = config.confirm_install })
+    end
 
     -- Configure
     ---@type integer, string
@@ -141,8 +166,12 @@ function M.load(plug_list, plug_dir)
 	    end
 
             if type(entry.spec.config) == "function" then
-                entry.spec.config()
-                entry.status = "loaded"
+                if not force_load and entry.spec.noload then
+                    entry.status = "unloaded"
+                else
+                    entry.spec.config()
+                    entry.status = "loaded"
+                end
             elseif type(entry.spec.config) == "nil" then
                 entry.status = "loaded"
             else
@@ -158,7 +187,7 @@ function M.load(plug_list, plug_dir)
     ---@module 'commands'
     local cmds = require("commands")
 
-    cmds.register(plugin_registry, M.update, M.load)
+    cmds.register(plugin_registry, force_simplug_update, force_simplug_load)
 end
 
 ---@brief Update installed plugins
@@ -188,9 +217,9 @@ function M.update(update_list)
             end
         end
 
-        vim.pack.update(repo_names, { force = not config.confirm_update })
+        vim.pack.update(repo_names, { force = not config.confirm_install })
     else
-        vim.pack.update(nil, { force = not config.confirm_update })
+        vim.pack.update(nil, { force = not config.confirm_install })
     end
 end
 
