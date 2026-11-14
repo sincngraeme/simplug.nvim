@@ -89,23 +89,23 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
             goto continue
         end
 
-        -- Skip if the origin is not a string or vim.pack.Spec
         local origin = spec.origin
 
+        -- Skip if the origin is not a string or vim.pack.Spec
         if type(origin) == "string" then
-            spec.origin = { src = origin }
-        elseif type(origin) == "table" then
-            -- if no name was supplied, then use the repo url 
-            -- (vim.pack.add does this but we need the field too)
-            if not spec.origin.name then
-                spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/(.*)$")
-            end
-        else
+            spec.origin = { src = origin } -- if its a string convert to table
+        elseif type(origin) ~= "table" then
             vim.notify(
                 "Error in config for plugin " .. plugin .. ": expected string|vim.pack.Spec",
                 vim.log.levels.ERROR
             )
             goto continue
+        end
+
+        -- if no name was supplied, then use the repo url 
+        -- (vim.pack.add does this but we need the field too)
+        if not spec.origin.name then
+            spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/(.*)$")
         end
 
         -- check if there is already an entry
