@@ -22,13 +22,13 @@ function M.register(registry, update, load)
 
 	---@type string, SimplugRegistryEntry
 	for _, value in pairs(registry) do
-	    if not value.spec and not value.spec.origin then
-            vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
+		if not value.spec or not value.spec.origin then
+		    vim.notify("Failed to generate command completions: nil entry", vim.log.levels.ERROR)
 		else
 		    if type(value.spec.origin) == "string" then
-                table.insert(completions, value.spec.origin)
+			table.insert(completions, value.spec.origin)
 		    elseif type(value.spec.origin) == "table" then
-                table.insert(completions, value.spec.origin.name)
+			table.insert(completions, value.spec.origin.name)
 		    end
 		    -- if it's somehow something else, just skip
 		end
