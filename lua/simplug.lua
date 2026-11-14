@@ -150,7 +150,6 @@ function M.load(plug_list, force, plug_dir)
                 else
                     entry.spec.config()
                     entry.status = "loaded"
-                    vim.notify("Loaded!", vim.log.levels.INFO)
                 end
             elseif type(entry.spec.config) == "nil" then
                 entry.status = "loaded"
