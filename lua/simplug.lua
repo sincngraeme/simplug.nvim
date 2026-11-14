@@ -187,8 +187,12 @@ function M.update(update_list)
             and entry.spec.origin.name then
                 table.insert(repo_names, entry.spec.origin.name)
             else
+                if name == 'simbuild' then
+                    table.insert(repo_names, 'simbuild.nvim')
+                else
                 vim.notify("Failed to find entry in registry for plugin " .. name,
                     vim.log.levels.ERROR)
+                end
             end
         end
 
