@@ -6,6 +6,7 @@ local M = {}
 ---@alias SimplugSpec { 
 ---origin: string|vim.pack.Spec,     --- link: link to git repo containing plugin
 ---config: function|nil,        --- config: function to run at config
+---noload: boolean,
 ---}
 
 ---@alias SimplugRegistryEntry {
@@ -120,7 +121,9 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
         -- commit the changes to the registry
         plugin_registry[plugin] = { spec = spec, installed = true, status = "loading" }
         table.insert(plugin_name_list, plugin)
-        table.insert(plugin_spec_list, spec.origin)
+        if not spec.noload then
+            table.insert(plugin_spec_list, spec.origin)
+        end
 
         :: continue ::
     end
@@ -141,10 +144,15 @@ function M.load(plug_list, plug_dir) plug_dir = plug_dir or config.plugin_dir
             goto continue
 	    end
 
-            if type(entry.spec.config) == "function"
-            or type(entry.spec.config) == "nil" then
-                if entry.spec.config and not entry.spec.lazy then entry.spec.config() end
-                -- vim.notify(name .. ": Config Loaded Successfully", vim.log.levels.INFO)
+            if type(entry.spec.config) == "function" then
+                if entry.spec.noload then
+                    entry.status = "unloaded"
+                else
+                    entry.spec.config()
+                    entry.status = "loaded"
+                end
+            elseif type(entry.spec.config) == "nil" then
+                entry.status = "loaded"
             else
                 vim.notify("Error loading config for: " .. name .. " - config must be a function or nil",
                 vim.log.levels.ERROR)
