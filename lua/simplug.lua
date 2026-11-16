@@ -245,14 +245,14 @@ function M.clean(ignore_list)
     local user_input = 'y'
     if not config.confirm_clean then user_input = 'Y' end
 
-
     if not lockfile.load(config.pack_lockfile) then
         vim.notify("Error loading " .. config.pack_lockfile, vim.log.levels.ERROR)
         return
     end
+
     for name, _ in pairs(lockfile.content.plugins) do
         local entry = plugin_registry[name]
-        if entry and entry.noclean and name ~= "simplug.nvim" then
+        if entry and not entry.noclean and name ~= "simplug.nvim" then
             if not user_input:match("^[YN]") then
                 vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
                 user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
