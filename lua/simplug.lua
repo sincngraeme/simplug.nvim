@@ -262,11 +262,13 @@ function M.clean(ignore_list)
 
     for name, _ in pairs(lockfile.content.plugins) do
 
+        if name == "simplug.nvim" then goto continue end
+
         -- try to lookup directly in registry, if it can't be found, 
         -- lookup in repo name table to get registry entry name
         entry = plugin_registry[name]
 
-        if not entry or entry.status == "unloaded" and not entry.noclean and name ~= "simplug.nvim" then
+        if not entry or (entry.status == "unloaded" and not entry.noclean) then
             if config.confirm_clean and not clean_all then
                 vim.notify("Plugin: " .. name .. " Installed but not in registry. Clean?", vim.log.levels.WARNING)
                 user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
