@@ -189,6 +189,8 @@ function M.load(plug_list, plug_dir)
     local cmds = require("commands")
 
     cmds.register(plugin_registry, force_simplug_update, force_simplug_load)
+
+    print(vim.inspec(repo_name_lookup))
 end
 
 ---@brief Update installed plugins
