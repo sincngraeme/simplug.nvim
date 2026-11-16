@@ -24,9 +24,6 @@ local M = {}
 ---confirm_clean: boolean,      --- confirm_clean: whether or not to ask the user for confirmations when cleaning
 ---}
 
----@type string[]
-local plugin_name_list = {}
-
 ---@type SimplugConfig
 local default_config = {
     plugin_dir = "plugins",
@@ -41,6 +38,9 @@ local config = {}
 
 ---@type table<string, SimplugRegistryEntry>
 local plugin_registry = {}
+
+---@type table<string, string>
+local repo_name_lookup = {}
 
 ---@brief   Setup function for the module
 ---@param   user_config SimplugConfig 
@@ -135,7 +135,7 @@ function M.load(plug_list, plug_dir)
 
         -- commit the changes to the registry
         plugin_registry[plugin] = { spec = spec, installed = true, status = "loading" }
-        table.insert(plugin_name_list, plugin)
+        repo_name_lookup[spec.origin.name] = plugin -- this way we can go from the repo name to the module name
         if spec.noload and not force_load then
             table.insert(noload_plugin_spec_list, spec.origin)
         else
@@ -252,6 +252,7 @@ function M.clean(ignore_list)
 
     for name, _ in pairs(lockfile.content.plugins) do
         local entry = plugin_registry[name]
+
         if entry and not entry.noclean and name ~= "simplug.nvim" then
             if not user_input:match("^[YN]") then
                 vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
