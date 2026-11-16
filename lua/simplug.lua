@@ -245,32 +245,45 @@ function M.clean(ignore_list)
     local lockfile = require("lockfile")
 
     -- If the confirm_clean option is false, clean all
-    local user_input = 'y'
-    if not config.confirm_clean then user_input = 'Y' end
 
     if not lockfile.load(config.pack_lockfile) then
         vim.notify("Error loading " .. config.pack_lockfile, vim.log.levels.ERROR)
         return
     end
 
+    ---@type boolean
+    local clean = false
+    ---@type boolean
+    local clean_all = false
+    ---@type string
+    local user_input
+    ---@type SimplugRegistryEntry
+    local entry
+
     for name, _ in pairs(lockfile.content.plugins) do
 
         -- try to lookup directly in registry, if it can't be found, 
         -- lookup in repo name table to get registry entry name
-        local entry = plugin_registry[name]
+        entry = plugin_registry[name]
 
         if not entry or entry.status == "unloaded" and not entry.noclean and name ~= "simplug.nvim" then
-            if not user_input:match("^[YN]") then
+            if config.confirm_clean and not clean_all then
                 vim.notify("Plugin: " .. name .. " Installed but not in registry. Clean?", vim.log.levels.WARNING)
                 user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
 
                 -- guard against no input
-                if not user_input then goto continue end
+                if not user_input then
+                    clean = false
+                    goto continue
+                end
 
-                user_input = user_input:match("^[yYnN]")
+                if user_input == "y" then clean = true
+                elseif user_input == "Y" then clean_all = true
+                elseif user_input == "n" then clean = false
+                elseif user_input == "N" then return end
             end
             -- Clean if yes or Yes
-            if user_input:match("^[yY]") then vim.pack.del({ name }) end
+            if clean or clean_all then vim.pack.del({ name }) end
         end
         :: continue ::
     end
