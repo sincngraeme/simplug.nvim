@@ -251,7 +251,10 @@ function M.clean(ignore_list)
     end
 
     for name, _ in pairs(lockfile.content.plugins) do
-        local entry = plugin_registry[name]
+
+        -- try to lookup directly in registry, if it can't be found, 
+        -- lookup in repo name table to get registry entry name
+        local entry = plugin_registry[name] or plugin_registry[repo_name_lookup[name]]
 
         if entry and not entry.noclean and name ~= "simplug.nvim" then
             if not user_input:match("^[YN]") then
