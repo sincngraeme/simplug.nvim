@@ -252,24 +252,15 @@ function M.clean(ignore_list)
     end
     for name, _ in pairs(lockfile.content.plugins) do
         local entry = plugin_registry[name]
-
-        if not entry or not entry.spec or not entry.spec.origin or not entry.spec.origin.name then
-            vim.notify("No valid registry entry for plugin " .. name, vim.log.levels.ERROR)
-            goto continue -- skip
-        end
-
-        local repo_name = entry.spec.origin.name
-
-        if entry.noclean and repo_name ~= "simplug.nvim" then
+        if entry and entry.noclean and name ~= "simplug.nvim" then
             if not user_input:match("^[YN]") then
                 vim.notify("Plugin: " .. name .. " Installed but not in pack list. Clean?", vim.log.levels.WARNING)
                 user_input = vim.fn.input("Clean " .. name .."? ([y]es|[n]o|[Y]es to all|[N]o to all):")
                 user_input = user_input:match("^[yYnN]")
             end
             -- Clean if yes or Yes
-            if user_input:match("^[yY]") then vim.pack.del({ repo_name }) end
+            if user_input:match("^[yY]") then vim.pack.del({ name }) end
         end
-        :: continue ::
     end
 end
 
