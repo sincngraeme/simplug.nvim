@@ -122,9 +122,11 @@ function M.load(plug_list, plug_dir)
 
         -- if no name was supplied, then use the repo url 
         -- (vim.pack.add does this but we need the field too)
-        if not spec.origin.name then
-            spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/([^%/]*)$")
-        end
+        -- if not spec.origin.name then
+        --     spec.origin.name = spec.origin.name or string.match(spec.origin.src, "%/([^%/]*)$")
+        -- end
+
+        spec.origin.name = plugin
 
         -- check if there is already an entry which has been installed and loaded
         ---@type SimplugRegistryEntry
@@ -256,7 +258,7 @@ function M.clean(ignore_list)
 
         -- try to lookup directly in registry, if it can't be found, 
         -- lookup in repo name table to get registry entry name
-        local entry = plugin_registry[name] or plugin_registry[repo_name_lookup[name]]
+        local entry = plugin_registry[name]
 
         if entry and not entry.noclean and name ~= "simplug.nvim" then
             if not user_input:match("^[YN]") then
