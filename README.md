@@ -155,7 +155,7 @@ Individual plugins are configured similarly to lazy. They must have the followin
 
 ```lua
 return {
-    link = "url"
+    origin = "url"
     config = function()
         return require("module-name").setup({
             -- Your Plugin Config Here
@@ -169,7 +169,7 @@ The type of config may not be a table. You *must* use an anonymous function. In 
 Some plugins will require you to specify a branch/version. In this case you can use:
 
 ```lua
-link = { src = "url", version = "branch-name"}
+origin = { src = "url", version = "branch-name"}
 ```
 
 >[!note]
