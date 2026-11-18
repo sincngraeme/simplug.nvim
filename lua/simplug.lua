@@ -39,9 +39,6 @@ local config = {}
 ---@type table<string, SimplugRegistryEntry>
 local plugin_registry = {}
 
----@type table<string, string>
-local repo_name_lookup = {}
-
 ---@brief   Setup function for the module
 ---@param   user_config SimplugConfig 
 ---@return  Simplug --- module instance
@@ -137,7 +134,6 @@ function M.load(plug_list, plug_dir)
 
         -- commit the changes to the registry
         plugin_registry[plugin] = { spec = spec, installed = true, status = "loading" }
-        repo_name_lookup[spec.origin.name] = plugin -- this way we can go from the repo name to the module name
         if spec.noload and not force_load then
             table.insert(noload_plugin_spec_list, spec.origin)
         else
