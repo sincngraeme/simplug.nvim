@@ -151,7 +151,6 @@ function M.load(plug_list, plug_dir)
     vim.pack.add(plugin_spec_list, { confirm = config.confirm_install })
 
     if #noload_plugin_spec_list ~= 0 then
-        vim.notify("Installing, skipping load", vim.log.levels.INFO)
         vim.pack.add(noload_plugin_spec_list, { load = false, confirm = config.confirm_install })
     end
 
