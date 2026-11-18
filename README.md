@@ -5,7 +5,7 @@ Simplug is a "plugin manager" for Neovim designed with simplicity in mind.
 I say plugin manager in quotes because it is *simply* a wrapper for the builtin plugin manager.
 
 ```lua
-vim.pack.add("someplugin") -- This one
+vim.pack.add({"someplugin"}) -- This one
 ```
 
 ## Dependencies
@@ -18,7 +18,7 @@ Please ensure you are using the most recent release.
 
 | Pros                                    | Cons                                                      |
 | --------------------------------------- | --------------------------------------------------------- |
-| - Simple and lightweight                | - No Lazy loading (limitation in builtin package manager) |
+| - Simple and lightweight                | - No Lazy loading (yet...)                                |
 | - Easy plugin depency management        | - No fancy menus                                          |
 | - Quickly unload plugins at will        | - Honestly I don't frequently maintain this               |
 | - Control over your directory structure | |
@@ -50,8 +50,7 @@ Install with git or download manually (this will not respond to updates so I don
 git clone "https://github.com/sincngraeme/simplug.nvim"
 ```
 
-If you choose this method, just copy the `simplug.lua` file into your config somewhere and require just that
-file.
+If you choose this method, just copy the contents of the lua folder into your config somewhere and require just that .
 
 ```lua
 require("simplug").setup()
@@ -70,7 +69,7 @@ require("simplug").setup({
     plugin_dir = "plugins"      -- location to load plugin configs from (can also be passed to the load function)
     always_update = false       -- whether or not to always run pack.update with load
     pack_lockfile = vim.fn.stdpath("config") .. "/nvim-pack-lock.json"   -- location of the lockfile if not in the default location
-    confirm_update  = false     -- whether or not to ask the user for confirmation when updating plugins
+    confirm_install  = false     -- whether or not to ask the user for confirmation when updating plugins
 })
 ```
 
@@ -139,16 +138,16 @@ simplug.load({
 ```
 
 You may also separate your plugin load tables even if they are in the same directory, though this is likely 
-slower than loading them all in one (haven't tested, you can if you care).
+slower than loading them all in one (haven't benchmarked, you can if you care).
 
-Once all plugins have been loaded, it is recommended to call `.clean()`. This function will check your
-`nvim-pack-lock.json` file for plugins that you have not loaded but are still installed, and uninstall them. If
+Once all plugins have been loaded, it is recommended to call `.clean()`. This function will check your `nvim-pack-lock.json` file for plugins that you have not loaded but are still installed, and uninstall them. If
 you have set `confirm_clean = true` then it waits for confirmation, but by default it does not.
 
-If you wish to disable a plugin by removing it from the load list without uninstalling, `.clean()` takes an optional argument, `ignore_list`, a table of plugins to ignore when cleaning. 
+If you wish to disable a plugin by removing it from the load list without uninstalling, `.clean()` takes an optional argument, `ignore_list`, a table of plugins to ignore when cleaning. The other option is to set the `noclean` option in that plugins spec, then it will not be uninstalled if not loaded.
 
->[!important]
->`ignore_list` entries must refer to the name of the plugin, not the name of the config file as with `.load()` since it will not be loaded
+The combination of `noclean` and `noload` allow you to delay a plugin being loaded or its config run
+until you manually call `SimplugLoad` on it. This is useful for speeding up config by not loading
+plugins that are rarely used, like a manual lazy loading.
 
 ## Plugin Configuration
 
@@ -156,7 +155,7 @@ Individual plugins are configured similarly to lazy. They must have the followin
 
 ```lua
 return {
-    link = "acount-name/repo-name"
+    origin = "url"
     config = function()
         return require("module-name").setup({
             -- Your Plugin Config Here
@@ -165,15 +164,12 @@ return {
 }
 ```
 
-The type of config may not be a table. You *must* use an anonymous function. In cases where a plugin does not
-support the `.setup()` method, you may assign it a boolean: `false`. This is often the case for plugins
-implemented in vim-script. However, boolean `true` is not a valid value, as this is implies that there is a
-config which does not exist.
+The type of config may not be a table. You *must* use an anonymous function. In cases where a plugin require configuration code to be run on load, you may assign it `nil` or simply omit it. This is often the case for plugins implemented in vim-script.
 
 Some plugins will require you to specify a branch/version. In this case you can use:
 
 ```lua
-link = { src = "acount-name/repo-name", branch = "branch-name"}
+origin = { src = "url", version = "branch-name"}
 ```
 
 >[!note]
@@ -182,8 +178,7 @@ link = { src = "acount-name/repo-name", branch = "branch-name"}
 
 ## Commands
 
-Simplug only exposes one command by default: `SimplugUpdate`. This is used to manually run the update process.
-It accepts a list of plugins to be updated. It provides completion for available plugins to update.
+Simplug only exposes one command by default: `SimplugUpdate`. This is used to manually run the update process. It accepts a list of plugins to be updated. It provides completion for available plugins to update.
 if no arguments are provided it will update all installed plugins. 
 
 ```vim
@@ -197,12 +192,6 @@ to update Simplug (though calling `vim.pack.update()` is also fine) assuming you
 ```vim
 SimplugUpdate simplug.nvim
 ```
-
-
->[!NOTE]
->Plugin names are the name of the plugin itself, not what you named the plugin config (as with
->`ignore_list`).
-
 
 ## The full example `init.lua`
 
